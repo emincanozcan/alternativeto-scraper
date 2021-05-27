@@ -2,3 +2,4 @@
 venv
 app-data
 images
+__pycache__
