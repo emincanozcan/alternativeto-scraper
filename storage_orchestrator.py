@@ -40,3 +40,8 @@ class StorageOrchestrator:
     @staticmethod
     def get_app_files_list():
         return os.listdir('app-data')
+
+    @staticmethod
+    def remove_app(app):
+        os.remove(f'app-data/{app["id"]}.json')
+        os.remove(f'images/{app["img"]}')

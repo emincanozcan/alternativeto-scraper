@@ -27,13 +27,14 @@ class AlternativetoRequest:
                             headers=headers).content
 
     @staticmethod
-    def get_alternatives_by_url_name(url_name):
+    def get_app_data_by_url_name(url_name):
         soup = BeautifulSoup(AlternativetoRequest.get_software_page(url_name), 'html.parser')
+        category = soup.select_one('div#mainContent nav ol li:nth-of-type(2) a span').text
         script = soup.select_one('script#__NEXT_DATA__').contents[0]
         alternatives = json.loads(script)['props']['pageProps']['items']
-        data = []
+        data = {"alternatives": [], "category": category}
         for i in alternatives:
-            data.append(i['id'])
+            data['alternatives'].append(i['id'])
         return data
 
     def get_list_data(self, platform, page):

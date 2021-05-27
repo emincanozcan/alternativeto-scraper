@@ -7,9 +7,16 @@ if __name__ == '__main__':
     start = time.time()
 
     StorageOrchestrator.create_folders()
-    DataGenerator.generate_app_data_multi_thread(start_page=1, end_page=10)
-    DataGenerator.generate_alternatives_data_multi_thread(8)
-    DataGenerator.generate_images_multi_thread(8)
+    DataGenerator.generate_app_data_multi_thread(start_page=1, end_page=150, thread_count=16)  # thread_count / 3
+    DataGenerator.add_fields_to_apps_multi_thread(24)
+    DataGenerator.generate_images_multi_thread(24)
+
+    # CLEAR GAMES AND APPS THAT HAS NO ALTERNATIVES
+    for file in StorageOrchestrator.get_app_files_list():
+        app_id = StorageOrchestrator.get_app_id_by_file_name(file_name=file)
+        app = StorageOrchestrator.get_json_by_app_id(app_id=app_id)
+        if len(app['alternativeIds']) < 1 or app['category'].lower() == 'games':
+            StorageOrchestrator.remove_app(app=app)
 
     end = time.time()
     print(f"Runtime is {end - start}")

@@ -1,3 +1,4 @@
+import math
 import threading
 
 from alternativeto_request import AlternativetoRequest
@@ -18,19 +19,20 @@ class DataGenerator:
                 StorageOrchestrator.save_app_as_json(app=app)
 
     @staticmethod
-    def generate_alternatives_data(file_names, index=0):
+    def add_fields_to_apps(file_names, index=0):
         for i in range(len(file_names)):
             print(f'Thread: {index} - Process: {i} / {len(file_names)}')
             app_id = StorageOrchestrator.get_app_id_by_file_name(file_name=file_names[i])
             app = StorageOrchestrator.get_json_by_app_id(app_id=app_id)
 
+            app_data = AlternativetoRequest.get_app_data_by_url_name(app['urlName'])
             alternative_ids = []
+
             if app['linux'] is True:
                 alternative_ids = [app['id']]
             else:
-                fetched_alternative_ids = AlternativetoRequest.get_alternatives_by_url_name(app['urlName'])
                 tmp = []
-                for alternative_id in fetched_alternative_ids:
+                for alternative_id in app_data['alternatives']:
                     if StorageOrchestrator.is_app_exists(app_id=alternative_id):
                         alternative_app = StorageOrchestrator.get_json_by_app_id(app_id=alternative_id)
                         if alternative_app['linux'] is True:
@@ -42,16 +44,17 @@ class DataGenerator:
                 for t in tmp:
                     alternative_ids.append(t['id'])
 
+            app['category'] = app_data['category']
             app['alternativeIds'] = alternative_ids
             StorageOrchestrator.save_app_as_json(app=app)
 
     @staticmethod
-    def generate_alternatives_data_multi_thread(thread_count):
+    def add_fields_to_apps_multi_thread(thread_count):
         files = StorageOrchestrator.get_app_files_list()
         threads = []
         file_groups = chunk_list(files, thread_count)
         for index in range(len(file_groups)):
-            t = threading.Thread(target=DataGenerator.generate_alternatives_data, args=(file_groups[index], index))
+            t = threading.Thread(target=DataGenerator.add_fields_to_apps, args=(file_groups[index], index))
             threads.append(t)
 
         for thread in threads:
@@ -61,13 +64,21 @@ class DataGenerator:
             thread.join()
 
     @staticmethod
-    def generate_app_data_multi_thread(start_page, end_page):
+    def generate_app_data_multi_thread(start_page, end_page, thread_count):
         threads = []
 
-        for platform in platforms:
-            t = threading.Thread(target=DataGenerator.generate_app_data,
-                                 args=(platform, start_page, end_page))
-            threads.append(t)
+        page_steps = math.ceil((end_page - start_page) / thread_count)
+
+        for step in range(thread_count):
+            s_page = start_page + (step * page_steps)
+            e_page = s_page + page_steps
+            if e_page > end_page:
+                e_page = end_page
+
+            for platform in platforms:
+                t = threading.Thread(target=DataGenerator.generate_app_data,
+                                     args=(platform, s_page, e_page))
+                threads.append(t)
 
         for thread in threads:
             thread.start()
