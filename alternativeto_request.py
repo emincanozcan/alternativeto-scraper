@@ -46,7 +46,7 @@ class AlternativetoRequest:
 
         for item in items:
             data_obj = {'name': item['name'], 'likes': item['likes'], 'img': 'not_found', 'urlName': item['urlName'],
-                        'id': item['id']}
+                        'id': item['id'], 'alternativeIds': [], 'category': 'not_found'}
 
             for platform in platforms:
                 data_obj[platform] = False

@@ -26,23 +26,21 @@ class DataGenerator:
             app = StorageOrchestrator.get_json_by_app_id(app_id=app_id)
 
             app_data = AlternativetoRequest.get_app_data_by_url_name(app['urlName'])
+
             alternative_ids = []
+            tmp = []
+            for alternative_id in app_data['alternatives']:
+                if StorageOrchestrator.is_app_exists(app_id=alternative_id):
+                    alternative_app = StorageOrchestrator.get_json_by_app_id(app_id=alternative_id)
+                    if alternative_app['linux'] is True:
+                        tmp.append({'id': alternative_app['id'], 'likes': alternative_app['likes']})
 
-            if app['linux'] is True:
-                alternative_ids = [app['id']]
-            else:
-                tmp = []
-                for alternative_id in app_data['alternatives']:
-                    if StorageOrchestrator.is_app_exists(app_id=alternative_id):
-                        alternative_app = StorageOrchestrator.get_json_by_app_id(app_id=alternative_id)
-                        if alternative_app['linux'] is True:
-                            tmp.append({'id': alternative_app['id'], 'likes': alternative_app['likes']})
+            tmp = sorted(tmp, key=lambda k: k['likes'], reverse=True)
+            if len(tmp) > 3:
+                tmp = tmp[0:3]
 
-                tmp = sorted(tmp, key=lambda k: k['likes'], reverse=True)
-                if len(tmp) > 3:
-                    tmp = tmp[0:3]
-                for t in tmp:
-                    alternative_ids.append(t['id'])
+            for t in tmp:
+                alternative_ids.append(t['id'])
 
             app['category'] = app_data['category']
             app['alternativeIds'] = alternative_ids
