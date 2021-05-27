@@ -1,21 +1,43 @@
 import json
 import os
+import threading
+
 import requests
 from bs4 import BeautifulSoup
 import time
+
+# TODO: concurrency of course..
+# TODO: refactor... it needs sooooo fucking many refactor...
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) '
                   'Chrome/50.0.2661.102 Safari/537.36'}
 platforms = ["linux", "windows", "mac"]
 
-# TODO: concurrency of course..
+
+def chunk_list(seq, num):
+    avg = len(seq) / float(num)
+    out = []
+    last = 0.0
+
+    while last < len(seq):
+        out.append(seq[int(last):int(last + avg)])
+        last += avg
+
+    return out
+
 
 def get_list_page(platform, page):
     return requests.get(f"https://alternativeto.net/platform/{platform}/?sort=likes&p={page}", headers=headers).content
 
 
 def get_software_page(url_name):
-    return requests.get(f"https://alternativeto.net/software/{url_name}/", headers=headers).content
+    return requests.get(f"https://alternativeto.net/software/{url_name}/?platform=linux&sort=likes",
+                        headers=headers).content
+
+
+def get_image(img):
+    return requests.get(f"https://d2.alternativeto.net/dist/icons/{img}?width=150&height=150", headers=headers).content
 
 
 def get_list_data(platform, page):
@@ -37,7 +59,7 @@ def get_list_data(platform, page):
                     data_obj[platform] = True
 
         for image in item['images']:
-            if image['type'] == "Icon":
+            if image['type'] == "Icon" and len(image['fileName']) > 0:
                 data_obj['img'] = image['fileName']
 
         data.append(data_obj)
@@ -45,20 +67,31 @@ def get_list_data(platform, page):
     return data
 
 
-def generate_app_list_data():
-    result = []
-    for i in range(350):  # 350
-        for p in platforms:
-            print(f"Platform: {p} PAGE: {i + 1}")
-            result.extend(get_list_data(p, i + 1))
+def generate_app_data_by_platform(platform):
+    for i in range(150):
+        print(f"Platform: {platform} PAGE: {i + 1}")
+        app_list = get_list_data(platform, i + 1)
+        for app in app_list:
+            with open(get_app_data_path(app["id"]), 'w') as outfile:
+                json.dump(app, outfile)
 
-    for app in result:
-        with open(get_app_data_path(app['id']), 'w') as outfile:
-            json.dump(app, outfile)
+
+def generate_app_data():
+    threads = []
+
+    for platform in platforms:
+        t = threading.Thread(target=generate_app_data_by_platform, args=(platform,))
+        threads.append(t)
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 
 def get_app_data_path(appId):
-    return 'data-app-list/' + appId + '.json'
+    return 'app-data/' + appId + '.json'
 
 
 def get_alternatives_by_url_name(url_name):
@@ -67,32 +100,98 @@ def get_alternatives_by_url_name(url_name):
     alternatives = json.loads(script)['props']['pageProps']['items']
     data = []
     for i in alternatives:
-        data.append(i['alternativeId'])
+        data.append(i['id'])
     return data
 
 
-def add_alternatives_data():
-    files = os.listdir('data-app-list')
-
-    i = 0
-    for file_name in files:
-        i += 1
-        print(f'Fetching alternatives data of: {i}/{len(files)}')
-        file_path = 'data-app-list/' + file_name
+def generate_alternatives_by_file_name(file_names, index):
+    for i in range(len(file_names)):
+        print(f'Thread: {index} - Process: {i} / {len(file_names)}')
+        file_name = file_names[i]
+        file_path = 'app-data/' + file_name
         with open(file_path, 'r') as file:
             json_data = json.loads(file.read())
-            json_data['alternativeIds'] = get_alternatives_by_url_name(json_data['urlName'])
+            alternative_ids = []
+            if json_data['linux'] is True:
+                alternative_ids = [json_data['id']]
+            else:
+                fetched_alternative_ids = get_alternatives_by_url_name(json_data['urlName'])
+                tmp = []
+                for alternative_id in fetched_alternative_ids:
+                    alternative_file = 'app-data/' + alternative_id + '.json'
+                    if os.path.exists(alternative_file):
+                        with open(alternative_file, 'r') as a_file:
+                            a_file_data = json.loads(a_file.read())
+                            if a_file_data['linux'] is True:
+                                tmp.append({'id': a_file_data['id'], 'likes': a_file_data['likes']})
+                tmp = sorted(tmp, key=lambda k: k['likes'], reverse=True)
+                if len(tmp) > 3:
+                    tmp = tmp[0:3]
+                for t in tmp:
+                    alternative_ids.append(t['id'])
+
+            json_data['alternativeIds'] = alternative_ids
 
         with open(file_path, 'w') as file:
             json.dump(json_data, file)
 
 
+def generate_alternatives_data():
+    files = os.listdir('app-data')
+    thread_count = 8
+    threads = []
+    file_groups = chunk_list(files, thread_count)
+    for index in range(len(file_groups)):
+        t = threading.Thread(target=generate_alternatives_by_file_name, args=(file_groups[index], index))
+        threads.append(t)
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+
+def save_images(file_list, index):
+    for i in range(len(file_list)):
+        print(f'Thread: {index} - Process: {i} / {len(file_list)}')
+        file_name = file_list[i]
+        path = 'app-data/' + file_name
+        with open(path, 'r') as file:
+            j = json.load(file)
+            img_name = j['img']
+            if j['img'] != 'not_found' and len(j['img']) > 0:
+                fetched_img = get_image(img_name)
+                with open('images/' + img_name, 'wb') as img_file:
+                    img_file.write(fetched_img)
+
+
+def fetch_images():
+    files = os.listdir('app-data')
+    thread_count = 8
+    threads = []
+    file_groups = chunk_list(files, thread_count)
+    for index in range(len(file_groups)):
+        t = threading.Thread(target=save_images, args=(file_groups[index], index))
+        threads.append(t)
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+
 if __name__ == '__main__':
     start = time.time()
-    if os.path.isdir('data-app-list') is False:
-        os.mkdir('data-app-list')
 
-    generate_app_list_data()
-    add_alternatives_data()
+    if os.path.isdir('app-data') is False:
+        os.mkdir('app-data')
+    if os.path.isdir('images') is False:
+        os.mkdir('images')
+
+    generate_app_data()
+    generate_alternatives_data()
+    fetch_images()
     end = time.time()
     print(f"Runtime is {end - start}")
