@@ -8,8 +8,8 @@ if __name__ == '__main__':
 
     StorageOrchestrator.create_folders()
     DataGenerator.generate_app_data_multi_thread(start_page=1, end_page=150, thread_count=16)  # thread_count / 3
-    DataGenerator.add_fields_to_apps_multi_thread(24)
-    DataGenerator.generate_images_multi_thread(24)
+    DataGenerator.add_fields_to_apps_multi_thread(42)
+    DataGenerator.generate_images_multi_thread(42)
 
     # CLEAR GAMES AND APPS THAT HAS NO ALTERNATIVES
     for file in StorageOrchestrator.get_app_files_list():
