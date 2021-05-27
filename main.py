@@ -8,6 +8,7 @@ headers = {
                   'Chrome/50.0.2661.102 Safari/537.36'}
 platforms = ["linux", "windows", "mac"]
 
+# TODO: concurrency of course..
 
 def get_list_page(platform, page):
     return requests.get(f"https://alternativeto.net/platform/{platform}/?sort=likes&p={page}", headers=headers).content
@@ -46,7 +47,7 @@ def get_list_data(platform, page):
 
 def generate_app_list_data():
     result = []
-    for i in range(3):  # 350
+    for i in range(350):  # 350
         for p in platforms:
             print(f"Platform: {p} PAGE: {i + 1}")
             result.extend(get_list_data(p, i + 1))
