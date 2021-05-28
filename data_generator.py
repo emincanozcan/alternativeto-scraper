@@ -36,8 +36,8 @@ class DataGenerator:
                         tmp.append({'id': alternative_app['id'], 'likes': alternative_app['likes']})
 
             tmp = sorted(tmp, key=lambda k: k['likes'], reverse=True)
-            if len(tmp) > 3:
-                tmp = tmp[0:3]
+            if len(tmp) > 5:
+                tmp = tmp[0:5]
 
             for t in tmp:
                 alternative_ids.append(t['id'])
