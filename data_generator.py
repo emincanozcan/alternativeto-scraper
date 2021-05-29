@@ -7,8 +7,7 @@ from storage_orchestrator import StorageOrchestrator
 
 platforms = ["linux", "windows", "mac"]
 
-
-
+programming_languages = ["Node.js", "C#", "Scala", "Python", "Java", "PHP", "Lua", "R (programming language)", "Perl", "Go (Programming Language)", "Ruby", "C++", "C (programming language)", "Rust" ]
 
 class DataGenerator:
 
@@ -46,6 +45,10 @@ class DataGenerator:
 
             app['category'] = app_data['category']
             app['alternativeIds'] = alternative_ids
+
+            if app['name'] in programming_languages:
+                app['alternativeIds'] = [app['id']]
+
             StorageOrchestrator.save_app_as_json(app=app)
 
     @staticmethod

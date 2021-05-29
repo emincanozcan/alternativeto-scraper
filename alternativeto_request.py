@@ -8,29 +8,34 @@ headers = {
                   'Chrome/50.0.2661.102 Safari/537.36'}
 platforms = ["linux", "windows", "mac"]
 
-pardus_ignore_list = ['Ekiga', 'Cloudron', 'Awes.io', 'Ubuntu Update Manager', 'AddThis', 'Chrome PDF Viewer Plug-in',
-                      'Nylas Mail', 'Vesta Control Panel', 'Solus', 'Self-Destructing Cookies', 'Ruby on Rails',
+pardus_ignore_list = ['Ekiga', "Xfce", 'Freelancer.com', 'Zent.io', 'Cloudron', 'Awes.io', 'Ubuntu Update Manager',
+                      'AddThis', 'Chrome PDF Viewer Plug-in', 'Nylas Mail', 'Vesta Control Panel', 'Solus',
+                      'Self-Destructing Cookies', 'Ruby on Rails',
                       'Grafana', 'django CMS', 'Comix', 'Tree Style Tab', 'xournal', 'Google Desktop', 'Tribler',
                       'HumHub', 'React', 'MultiBootUSB', 'Salesflare', 'Pencil', 'Phoenix OS', 'Zorin OS',
                       'BlueGriffon', 'CodeIgniter', 'recordMyDesktop', 'PS3 Media Server', 'OneTab', 'ClearOS',
                       "Shaarli", 'KeepNote', 'pandoc', 'Mame', 'Synkron', 'CoffeeScript', 'LÖVE', "7-Zip", "µTorrent",
-                      "Ubuntu", "Inkscape", "WordPress", "Foxit Reader", "JDownloader", "WinRAR",
-                      "Debian", "Google Earth", "Linux Mint", "f.lux", "TrueCrypt", "DownThemAll", "Google Keep",
-                      "diagrams.net", "UNetbootin", "Spideroak One Backup", "Arch Linux", "GitLab", "Dogecoin",
-                      "GOG.com", "Bitcoin",
-                      "FreeMind", "Fedora", "JavaScript", "Litecoin", "elementary OS",
+                      "Ubuntu", "Inkscape", "WordPress", "Foxit Reader", "JDownloader", "WinRAR", 'Magento', 'NameCoin',
+                      'Peercoin', "Debian", "Google Earth", "Linux Mint", "f.lux", "TrueCrypt", "DownThemAll",
+                      "Google Keep", "diagrams.net", "UNetbootin", "Spideroak One Backup", "Arch Linux", "GitLab",
+                      "Dogecoin",
+                      "GOG.com", "Bitcoin", 'LXDE', 'BitMeter OS', 'Update Manager', 'Firefox PDF Viewer (PDF.js)',
+                      "FreeMind", "Fedora", "JavaScript", "Litecoin", "elementary OS", 'KDE Plasma', 'React Native',
                       "openSUSE", "Humble Bundle", "Xubuntu", "phpMyAdmin", "Manjaro Linux", "Vuze", "Firefox Sync",
                       "Kubuntu", "Maxthon Cloud Browser", "Hiren’s BootCD", "Linux kernel", "Miro", "Lubuntu", "Webmin",
                       "Kali Linux", "Firefox Nightly", "GNU Bourne Again SHell", "Cinnamon", "Gnome Do", "Ubuntu Touch",
-                      "GRUB", "Android-x86", "uMatrix", "SimilarSites", "Desura", "Empathy",
-                      "Google Chrome Developer Tools", "Cheat Engine", "Markdown", "VisualBoyAdvance", "CentOS",
+                      "GRUB", "Android-x86", "uMatrix", "SimilarSites", "Desura", "Empathy", 'pacman (package manager)',
+                      'PrestaShop', "Google Chrome Developer Tools", "Cheat Engine", "Markdown", "VisualBoyAdvance",
+                      "CentOS",
                       "Gentoo", "MATE", "SteamOS", "Google Workspace", "Docky", "KompoZer", "Google Chrome OS",
                       "FrostWire", "Chrome Web Store", "Jenkins", "MinGW", "itch.io", "Ungoogled Chromium", "Tomahawk",
                       "GIMPshop", "FreeRapid Downloader", "UMPlayer", "AngularJS", "Red Hat Enterprise Linux", "cPanel",
                       "Aegisub", "XChat for Linux", "SimilarWeb", "Django", "Reveal.js", "Gwibber", "Electron", "Plesk",
                       "RedshiftGUI", "Scrapy", "OpenShift", "Ethereum", "Ubuntu MATE", "Puppy Linux", "Tesseract",
                       "MediCat USB", "Joli OS", "phpBB", "Qubes OS", "VMmanager", "Raspberry Pi OS", 'Invidious',
-                      'Visual Understanding Environment', 'Laravel', 'aTunes', 'dd', 'Dukto R6', 'YunoHost', 'Electrum']
+                      "Snap Store", "Puppet", 'Visual Understanding Environment', 'Laravel', 'aTunes', 'dd', 'Dukto R6',
+                      'YunoHost', 'Electrum',
+                      'aptitude', 'TED']
 
 
 class AlternativetoRequest:
@@ -57,6 +62,7 @@ class AlternativetoRequest:
         script = soup.select_one('script#__NEXT_DATA__').contents[0]
         alternatives = json.loads(script)['props']['pageProps']['items']
         data = {"alternatives": [], "category": category}
+
         for i in alternatives:
             data['alternatives'].append(i['id'])
         return data
@@ -72,6 +78,9 @@ class AlternativetoRequest:
             data_obj = {'name': item['name'], 'likes': item['likes'], 'img': 'not_found', 'urlName': item['urlName'],
                         'id': item['id'], 'alternativeIds': [], 'category': 'not_found'}
 
+            if data_obj['likes'] < 30:
+                continue
+
             for platform in platforms:
                 data_obj[platform] = False
 
@@ -80,8 +89,7 @@ class AlternativetoRequest:
                     if item_platform['name'].lower() == platform:
                         data_obj[platform] = True
 
-            if data_obj['name'] in pardus_ignore_list and data_obj['linux'] is True:
-                print("Ignoring linux app: " + data_obj['name'])
+            if data_obj['name'].strip() in pardus_ignore_list and data_obj['linux'] is True:
                 continue
 
             for image in item['images']:
