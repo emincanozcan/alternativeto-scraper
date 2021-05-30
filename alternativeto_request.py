@@ -71,34 +71,39 @@ class AlternativetoRequest:
         return data
 
     def get_list_data(self, platform, page):
-        data = []
-        page_content = self.get_list_page(platform, page)
-        soup = BeautifulSoup(page_content, 'html.parser')
-        script = soup.select_one('script#__NEXT_DATA__').contents[0]
-        items = json.loads(script)['props']['pageProps']['items']
-        for item in items:
+        try:
+            data = []
+            page_content = self.get_list_page(platform, page)
+            soup = BeautifulSoup(page_content, 'html.parser')
+            script = soup.select_one('script#__NEXT_DATA__').contents[0]
+            items = json.loads(script)['props']['pageProps']['items']
+            for item in items:
 
-            data_obj = {'name': item['name'], 'likes': item['likes'], 'img': 'not_found', 'urlName': item['urlName'],
-                        'id': item['id'], 'alternativeIds': [], 'category': 'not_found'}
+                data_obj = {'name': item['name'], 'likes': item['likes'], 'img': 'not_found',
+                            'urlName': item['urlName'],
+                            'id': item['id'], 'alternativeIds': [], 'category': 'not_found'}
 
-            if data_obj['likes'] < 30:
-                continue
+                if data_obj['likes'] < 30:
+                    continue
 
-            for platform in platforms:
-                data_obj[platform] = False
-
-            for item_platform in item['platforms']:
                 for platform in platforms:
-                    if item_platform['name'].lower() == platform:
-                        data_obj[platform] = True
+                    data_obj[platform] = False
 
-            if data_obj['name'].strip() in pardus_ignore_list and data_obj['linux'] is True:
-                continue
+                for item_platform in item['platforms']:
+                    for platform in platforms:
+                        if item_platform['name'].lower() == platform:
+                            data_obj[platform] = True
 
-            for image in item['images']:
-                if image['type'] == "Icon" and len(image['fileName']) > 0:
-                    data_obj['img'] = image['fileName']
+                if data_obj['name'].strip() in pardus_ignore_list and data_obj['linux'] is True:
+                    continue
 
-            data.append(data_obj)
+                for image in item['images']:
+                    if image['type'] == "Icon" and len(image['fileName']) > 0:
+                        data_obj['img'] = image['fileName']
 
-        return data
+                data.append(data_obj)
+
+            return data
+        except:
+            print("Retry: ", platform, " ", page)
+            return AlternativetoRequest.get_list_page(platform, page)
