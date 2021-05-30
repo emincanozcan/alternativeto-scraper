@@ -18,8 +18,11 @@ class StorageOrchestrator:
 
     @staticmethod
     def save_app_as_json(app):
-        with open(f"app-data/{app['id']}.json", 'w') as f:
-            json.dump(app, f)
+        try:
+            with open(f"app-data/{str(app['id'])}.json", 'w') as f:
+                json.dump(app, f)
+        except:
+            print("ID ERROR:", app)
         return True
 
     @staticmethod

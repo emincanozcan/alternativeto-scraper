@@ -1,4 +1,5 @@
 import json
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -10,7 +11,8 @@ platforms = ["linux", "windows", "mac"]
 
 pardus_ignore_list = ['Ekiga', "Xfce", 'Freelancer.com', 'Zent.io', 'Cloudron', 'Awes.io', 'Ubuntu Update Manager',
                       'AddThis', 'Chrome PDF Viewer Plug-in', 'Nylas Mail', 'Vesta Control Panel', 'Solus',
-                      'Self-Destructing Cookies', 'Ruby on Rails',
+                      'Self-Destructing Cookies', 'Ruby on Rails', 'Tomboy', 'Video DownloadHelper', 'Agar.io',
+                      'Dolphin File Manager', 'GnuPG', 'gnome-disk-utility', 'trolCommander', 'LastPass',
                       'Grafana', 'django CMS', 'Comix', 'Tree Style Tab', 'xournal', 'Google Desktop', 'Tribler',
                       'HumHub', 'React', 'MultiBootUSB', 'Salesflare', 'Pencil', 'Phoenix OS', 'Zorin OS',
                       'BlueGriffon', 'CodeIgniter', 'recordMyDesktop', 'PS3 Media Server', 'OneTab', 'ClearOS',
@@ -79,7 +81,7 @@ class AlternativetoRequest:
             items = json.loads(script)['props']['pageProps']['items']
             for item in items:
 
-                data_obj = {'name': item['name'], 'likes': item['likes'], 'img': 'not_found',
+                data_obj = {'name': item['name'].strip(), 'likes': item['likes'], 'img': 'not_found',
                             'urlName': item['urlName'],
                             'id': item['id'], 'alternativeIds': [], 'category': 'not_found'}
 
@@ -106,4 +108,5 @@ class AlternativetoRequest:
             return data
         except:
             print("Retry: ", platform, " ", page)
+            time.sleep(3)
             return AlternativetoRequest.get_list_page(platform, page)
