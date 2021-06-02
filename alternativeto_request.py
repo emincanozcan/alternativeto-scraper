@@ -23,7 +23,8 @@ pardus_ignore_list = ['Ekiga', "Xfce", 'Freelancer.com', 'Zent.io', 'Cloudron', 
                       "Dogecoin", 'IssueHunt', 'DigitalOcean', 'Vultr', 'FVD Speed Dial', 'Linode', 'Heroku', 'grep',
                       "GOG.com", "Bitcoin", 'LXDE', 'BitMeter OS', 'Update Manager', 'Firefox PDF Viewer (PDF.js)',
                       "FreeMind", "Fedora", "JavaScript", "Litecoin", "elementary OS", 'KDE Plasma', 'React Native',
-                      "Apache Cordova", "SoftMaker FreeOffice",
+                      "Apache Cordova", "SoftMaker FreeOffice", 'Greasemonkey', "Remember The Milk", 'Diaspora',
+                      'Hotspot Shield', 'Chrome Remote Desktop', 'MediaFire',
                       "openSUSE", "Humble Bundle", "Xubuntu", "phpMyAdmin", "Manjaro Linux", "Vuze", "Firefox Sync",
                       "Kubuntu", "Maxthon Cloud Browser", "Hiren’s BootCD", "Linux kernel", "Miro", "Lubuntu", "Webmin",
                       "Kali Linux", "Firefox Nightly", "GNU Bourne Again SHell", "Cinnamon", "Gnome Do", "GNOME",
@@ -39,8 +40,8 @@ pardus_ignore_list = ['Ekiga', "Xfce", 'Freelancer.com', 'Zent.io', 'Cloudron', 
                       "RedshiftGUI", "Scrapy", "OpenShift", "Ethereum", "Ubuntu MATE", "Puppy Linux", "Tesseract",
                       "MediCat USB", "Joli OS", "phpBB", "Qubes OS", "VMmanager", "Raspberry Pi OS", 'Invidious',
                       "Snap Store", "Puppet", 'Visual Understanding Environment', 'Laravel', 'aTunes', 'dd', 'Dukto R6',
-                      'YunoHost', 'Electrum',
-                      'aptitude', 'TED']
+                      'YunoHost', 'Electrum', 'aptitude', 'TED', 'Lightning Calendar', 'Yandex.Disk', 'Yandex.Browser',
+                      'ImageMagick', ]
 
 
 class AlternativetoRequest:
